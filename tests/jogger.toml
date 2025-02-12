@@ -1,0 +1,36 @@
+[simplestage]
+device_path = "/dev/ttyUSB0"
+
+[stage_xyz]
+device_module="simplestage"
+
+axis.x.leadscrew_physical_lead_mm = 1
+axis.x.stepper_fullsteps_per_rev = 200
+axis.x.microstep_multiplier = 8
+axis.x.topspeed_mm_per_sec = 10
+axis.x.accel_mm_per_sec_sq = 10
+
+axis.y.leadscrew_physical_lead_mm = 1
+axis.y.stepper_fullsteps_per_rev = 200
+axis.y.microstep_multiplier = 8
+axis.y.topspeed_mm_per_sec = 10
+
+axis.z.leadscrew_physical_lead_mm = 0.3
+axis.z.stepper_fullsteps_per_rev = 200
+axis.z.microstep_multiplier = 8
+axis.z.topspeed_mm_per_sec = 3
+
+[lightsource_transmitted]
+device_module="simplestage"
+intensity = 255
+
+[minimal_jogger_control]
+xy_small_jog = 0.1
+xy_medium_jog = 0.5
+xy_large_jog = 1
+z_small_jog = 0.00075
+z_medium_jog = 0.003
+z_large_jog = 0.03
+
+[system]
+interface_module = "minimal_jogger_control"
