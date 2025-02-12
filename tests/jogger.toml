@@ -9,16 +9,19 @@ axis.x.stepper_fullsteps_per_rev = 200
 axis.x.microstep_multiplier = 8
 axis.x.topspeed_mm_per_sec = 10
 axis.x.accel_mm_per_sec_sq = 10
+axis.x.soft_limit_fraction = 0.98
 
 axis.y.leadscrew_physical_lead_mm = 1
 axis.y.stepper_fullsteps_per_rev = 200
 axis.y.microstep_multiplier = 8
 axis.y.topspeed_mm_per_sec = 10
+axis.y.soft_limit_fraction = 0.98
 
 axis.z.leadscrew_physical_lead_mm = 0.3
 axis.z.stepper_fullsteps_per_rev = 200
 axis.z.microstep_multiplier = 8
 axis.z.topspeed_mm_per_sec = 3
+axis.z.soft_limit_fraction = 0.98
 
 [lightsource_transmitted]
 device_module="simplestage"
