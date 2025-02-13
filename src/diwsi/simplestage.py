@@ -74,19 +74,22 @@ class SimpleStage(object):
     response = self.ser.readline().decode("ASCII").strip()
     if response != "LED {} DONE".format(led):
       raise IOError("Did not receive expected response - Instead received {}".format(response))
-    self.update_attr()
+    self.led = led
     
   def move_xy(self, x, y):
     self.__long_command(command = "XY {} {}".format(x,y),
                         successresponse = "XY {} {} DONE".format(x,y))
+    self.x = x
+    self.y = y
 
   def move_z(self, z):
     self.__long_command(command = "Z {}".format(z),
                         successresponse = "Z {} DONE".format(z))
+    self.z = z
 
   def home(self, xmax, ymax, zmax):
     maxtimeouts=30
-    successresponse="LIMITS: "
+    successresponse="LIMITS "
     self.ser.write('HOME {} {} {}\n'.format(xmax, ymax, zmax).encode("ASCII"))
     for i in range(maxtimeouts):
       response = self.ser.readline().decode("ASCII").strip()

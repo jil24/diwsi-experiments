@@ -4,30 +4,36 @@ device_path = "/dev/ttyUSB0"
 [stage_xyz]
 device_module="simplestage"
 
-axis.x.leadscrew_physical_lead_mm = 1
-axis.x.stepper_fullsteps_per_rev = 200
-axis.x.microstep_multiplier = 8
-axis.x.topspeed_mm_per_sec = 10
-axis.x.accel_mm_per_sec_sq = 10
-axis.x.soft_limit_fraction = 0.98
+axis_x_leadscrew_physical_lead_mm = 1
+axis_x_stepper_fullsteps_per_rev = 200
+axis_x_microstep_multiplier = 8
+axis_x_soft_limit_fraction = 0.98
+axis_x_maximum_travel_mm = 150
 
-axis.y.leadscrew_physical_lead_mm = 1
-axis.y.stepper_fullsteps_per_rev = 200
-axis.y.microstep_multiplier = 8
-axis.y.topspeed_mm_per_sec = 10
-axis.y.soft_limit_fraction = 0.98
 
-axis.z.leadscrew_physical_lead_mm = 0.3
-axis.z.stepper_fullsteps_per_rev = 200
-axis.z.microstep_multiplier = 8
-axis.z.topspeed_mm_per_sec = 3
-axis.z.soft_limit_fraction = 0.98
+axis_y_leadscrew_physical_lead_mm = 1
+axis_y_stepper_fullsteps_per_rev = 200
+axis_y_microstep_multiplier = 8
+axis_y_soft_limit_fraction = 0.98
+axis_y_maximum_travel_mm = 100
+
+axis_z_leadscrew_physical_lead_mm = 0.3
+axis_z_stepper_fullsteps_per_rev = 200
+axis_z_microstep_multiplier = 8
+axis_z_soft_limit_fraction = 0.98
+axis_z_maximum_travel_mm = 100
+
+
+axis_x_topspeed_mm_per_sec = 5
+axis_z_topspeed_mm_per_sec = 2
+axis_x_accel_mm_per_sec_sq = 5
+# remember that y ais top speed isn't defined - it's calcualted based on X axis, same with acceleration for Y/Z as the geometry is different but there's one acceleration parameter behind the scenees
 
 [lightsource_transmitted]
 device_module="simplestage"
 intensity = 255
 
-[minimal_jogger_control]
+[keyboard_jogger_control]
 xy_small_jog = 0.1
 xy_medium_jog = 0.5
 xy_large_jog = 1
