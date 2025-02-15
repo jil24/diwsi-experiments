@@ -1,5 +1,5 @@
-from diwsi.simplestage import SimpleStage
 import logging
+from diwsi.simplestage import SimpleStage
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +9,7 @@ class SoftLimitExceeded(Exception):
 
 
 
-class Stage_XYZ(object):
+class StageXYZ(object):
   # conversion methods
   def mm_to_microsteps(self, mm, axis):
     # will round to nearest integer number of steps

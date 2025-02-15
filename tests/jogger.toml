@@ -1,9 +1,7 @@
-[simplestage]
+[SimpleStage]
 device_path = "/dev/ttyUSB0"
 
-[stage_xyz]
-device_module="simplestage"
-
+[StageXYZ]
 axis_x_leadscrew_physical_lead_mm = 1
 axis_x_stepper_fullsteps_per_rev = 200
 axis_x_microstep_multiplier = 8
@@ -29,17 +27,28 @@ axis_z_topspeed_mm_per_sec = 2
 axis_x_accel_mm_per_sec_sq = 5
 # remember that y ais top speed isn't defined - it's calcualted based on X axis, same with acceleration for Y/Z as the geometry is different but there's one acceleration parameter behind the scenees
 
-[lightsource_transmitted]
+[LightsourceTransmitted]
 device_module="simplestage"
 intensity = 255
 
-[keyboard_jogger_control]
+[KeyboardJoggerControl]
 xy_small_jog = 0.1
-xy_medium_jog = 0.5
-xy_large_jog = 1
-z_small_jog = 0.00075
-z_medium_jog = 0.003
-z_large_jog = 0.03
+xy_medium_jog = 1
+xy_large_jog = 5
+z_small_jog = 0.0025
+z_medium_jog = 0.01
+z_large_jog = 0.1
+up_key = '8'
+down_key = '2'
+right_key = '6'
+left_key = '4'
+z_up_key = '9'
+z_down_key = '3'
+switch_small_key = '-'
+switch_medium_key = '+'
+switch_large_key = 'enter'
 
-[system]
-interface_module = "minimal_jogger_control"
+[System]
+interface_module = "KeyboardJoggerControl"
+stage_control_module = "StageXYZ"
+controller_device_module = "SimpleStage"
