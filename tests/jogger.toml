@@ -7,13 +7,16 @@ axis_x_stepper_fullsteps_per_rev = 200
 axis_x_microstep_multiplier = 8
 axis_x_soft_limit_fraction = 0.98
 axis_x_maximum_travel_mm = 150
-
+axis_x_backlash_compensation = 0.2
+# backlash extra travel  - it will always perform an extra move prior to the requested move if moving opposite to compensation direction
+# if set to zero, no backlash compensation will occur
 
 axis_y_leadscrew_physical_lead_mm = 1
 axis_y_stepper_fullsteps_per_rev = 200
 axis_y_microstep_multiplier = 8
 axis_y_soft_limit_fraction = 0.98
 axis_y_maximum_travel_mm = 100
+axis_y_backlash_compensation = 0.2
 
 axis_z_leadscrew_physical_lead_mm = 0.3
 axis_z_stepper_fullsteps_per_rev = 200

@@ -7,12 +7,10 @@ class SoftLimitExceeded(Exception):
     '''An operation that would exceed soft limits was requested'''
 
 
-
-
 class StageXYZ(object):
   # conversion methods
   def mm_to_microsteps(self, mm, axis):
-    # will round to nearest integer number of steps
+    # will round to nearest integer number of microsteps
     leadscrew_physical_lead_mm = getattr(self, "axis_{}_leadscrew_physical_lead_mm".format(axis))
     stepper_fullsteps_per_rev = getattr(self, "axis_{}_stepper_fullsteps_per_rev".format(axis))
     microstep_multiplier = getattr(self, "axis_{}_microstep_multiplier".format(axis))
@@ -23,6 +21,12 @@ class StageXYZ(object):
     stepper_fullsteps_per_rev = getattr(self, "axis_{}_stepper_fullsteps_per_rev".format(axis))
     microstep_multiplier = getattr(self, "axis_{}_microstep_multiplier".format(axis))
     return ((float(microsteps)/microstep_multiplier)/stepper_fullsteps_per_rev)*leadscrew_physical_lead_mm
+    
+  def round_mm(self, mm, axis):
+    """rounds millimeters to the nearest microstep interval"""
+    ms = self.mm_to_microsteps(mm, axis)
+    mmround = self.microsteps_to_mm(ms,axis)
+    return mmround
     
   def update_position_from_device(self):
     setattr(self, 'position_x', self.microsteps_to_mm(self.device_object.x,'x'))
@@ -64,6 +68,14 @@ class StageXYZ(object):
   def set_x_accel_mm_per_sec_sq(self, axis_x_accel_mm_per_sec_sq):
     self.device_object.set_accel(self.mm_to_microsteps(axis_x_accel_mm_per_sec_sq,'x'))
     self.update_accel_from_device()
+    
+  def update_prior_directions(self,new_x,new_y):
+    # if there's movement on each axis, update the movement direction
+    delta_x = round(self.round_mm(new_x,'x') - self.position_x,4) # round to 4 decimal places to prevent float roundoff errors 
+    delta_y = round(self.round_mm(new_y,'y') - self.position_y,4)    
+    if delta_x != 0: self.prior_direction_x = delta_x/abs(delta_x)
+    if delta_y != 0: self.prior_direction_y = delta_y/abs(delta_y)
+
 
   # initialization - remember that y speed isn't defined. since Y axis can have different leadscrew geometry from X axis we only define X speed. Accel is global
   def __init__(self, 
@@ -75,12 +87,14 @@ class StageXYZ(object):
   axis_x_microstep_multiplier = 8,
   axis_x_soft_limit_fraction = 0.98,
   axis_x_maximum_travel_mm = 150,
+  axis_x_backlash_compensation = 0,
 
   axis_y_leadscrew_physical_lead_mm = 1,
   axis_y_stepper_fullsteps_per_rev = 200,
   axis_y_microstep_multiplier = 8,
   axis_y_soft_limit_fraction = 0.98,
   axis_y_maximum_travel_mm = 100,
+  axis_y_backlash_compensation = 0,
   
   axis_z_leadscrew_physical_lead_mm = 0.3,
   axis_z_stepper_fullsteps_per_rev = 200,
@@ -117,19 +131,55 @@ class StageXYZ(object):
     self.update_speeds_from_device()
     self.update_accel_from_device()
     
-  # absolute xy moves
+    # prepare to track direction of prior movement in x and y axes
+    self.prior_direction_x = 0
+    self.prior_direction_y = 0
+    
+
+
+
+
+
+
+
+  # absolute xy moves, incorporating backlash compensation as needed
   def to_xy(self,x,y):
+    delta_x = round(self.round_mm(x,'x') - self.position_x,4)
+    delta_y = round(self.round_mm(y,'y') - self.position_y,4)
+    compensate_x = 0
+    compensate_y = 0
+    # calculate backlash compensation if changing directions. if compensation value is zero this will always be zero
+    
+    if (delta_x * self.prior_direction_x) < 0:
+      compensate_x = -1*(delta_x/abs(delta_x))*self.axis_x_backlash_compensation
+    if (delta_y * self.prior_direction_y) < 0:
+      compensate_y = -1*(delta_y/abs(delta_y))*self.axis_y_backlash_compensation
+      
     if not self.home_performed:
       logger.warning('stage has not been homed - soft limits are not set!')
     else:
       if x < self.axis_x_soft_limits[0] or x > self.axis_x_soft_limits[1] or y < self.axis_y_soft_limits[0] or y > self.axis_y_soft_limits[1]:
         raise SoftLimitExceeded
+      
+    # perform backlash compensation move if either compensation value isn't zero
+    if (compensate_x != 0 or compensate_y != 0):
+      self.device_object.move_xy(
+        self.mm_to_microsteps(self.position_x+compensate_x,'x'),
+        self.mm_to_microsteps(self.position_y+compensate_y,'y')
+        )
+      
+    # now perform the main move, since this is absolute, we dont include the compensation
     self.device_object.move_xy(
       self.mm_to_microsteps(x,'x'),
       self.mm_to_microsteps(y,'y')
-      )
+      )    
+    self.update_prior_directions(x,y)
     self.update_position_from_device()
-      
+    
+    
+    
+    
+    
   # absolute z moves
   def to_z(self,z):
     if not self.home_performed:
@@ -144,28 +194,13 @@ class StageXYZ(object):
   def relative_xy(self,relative_x,relative_y):
     x = self.position_x + relative_x
     y = self.position_y + relative_y
-    if not self.home_performed:
-      logger.warning('stage has not been homed - soft limits are not set!')
-    else:
-      if x < self.axis_x_soft_limits[0] or x > self.axis_x_soft_limits[1] or y < self.axis_y_soft_limits[0] or y > self.axis_y_soft_limits[1]:
-        raise SoftLimitExceeded
-    self.device_object.move_xy(
-      self.mm_to_microsteps(x,'x'),
-      self.mm_to_microsteps(y,'y')
-      )
-    self.update_position_from_device()
+    self.to_xy(x,y)
 
   # relative z moves
   def relative_z(self,relative_z):
     z = self.position_z + relative_z
-    if not self.home_performed:
-      logger.warning('stage has not been homed - soft limits are not set!')
-    else:
-      if z < self.axis_z_soft_limits[0] or z > self.axis_z_soft_limits[1]:
-        raise SoftLimitExceeded
-    self.device_object.move_z(self.mm_to_microsteps(z,'z'))
-    self.update_position_from_device()
-  
+    self.to_z(z)
+
   # homing
   def home(self):
     x = self.mm_to_microsteps(self.axis_x_maximum_travel_mm, 'x')
